@@ -1,7 +1,9 @@
 services:
   - type: web
     name: traffic-flow-api
-    env: docker
+    runtime: docker
     plan: free
+    branch: main
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /health
