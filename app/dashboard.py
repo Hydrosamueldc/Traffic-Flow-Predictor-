@@ -22,7 +22,22 @@ def load_env_file() -> None:
 
 
 load_env_file()
-API_URL = os.getenv("TRAFFIC_API_URL", "http://127.0.0.1:8000").rstrip("/")
+
+
+def get_api_url() -> str:
+    """Read the backend URL locally or from Streamlit Community Cloud secrets."""
+    configured_url = os.getenv("TRAFFIC_API_URL")
+    if not configured_url:
+        try:
+            configured_url = st.secrets.get("TRAFFIC_API_URL")
+        except (FileNotFoundError, KeyError):
+            configured_url = None
+
+    return (configured_url or "http://127.0.0.1:8000").rstrip("/")
+
+
+API_URL = get_api_url()
+IS_LOCAL_API = API_URL.startswith(("http://127.0.0.1", "http://localhost"))
 WEATHER_OPTIONS = ["Clear", "Clouds", "Rain", "Snow", "Fog", "Mist", "Haze"]
 
 
@@ -244,11 +259,15 @@ with st.sidebar:
     if check_api():
         st.success("FastAPI backend is running", icon=":material/check_circle:")
     else:
-        st.warning("Start the API before predicting.", icon=":material/warning:")
-        st.code(
-            "python -m uvicorn app.predict_api:app --host 127.0.0.1 --port 8000 --reload",
-            language="powershell",
-        )
+        if IS_LOCAL_API:
+            st.warning("The prediction service is not connected.", icon=":material/warning:")
+            st.caption(
+                "Running locally? Start the API. Running online? Add the public backend URL "
+                "as TRAFFIC_API_URL in the dashboard settings."
+            )
+        else:
+            st.warning("The prediction service is temporarily unavailable.", icon=":material/warning:")
+            st.caption("Check that the backend deployment is running, then try again.")
     st.caption(f"Dashboard backend: {API_URL}")
 
 
@@ -351,5 +370,9 @@ if submitted:
                 uncertainty signal, not a formal guarantee. A production system would monitor errors over time.
                 """
             )
-    except requests.RequestException as exc:
-        st.error(f"Prediction request failed: {exc}", icon=":material/error:")
+    except requests.RequestException:
+        st.error(
+            "The dashboard could not reach the prediction service. Check the backend URL and make sure "
+            "the backend deployment is running.",
+            icon=":material/error:",
+        )
