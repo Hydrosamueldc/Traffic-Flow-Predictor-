@@ -93,10 +93,38 @@ The data is split chronologically, not randomly, so the model is tested on futur
 | Model | MAE | RMSE | R2 |
 |---|---:|---:|---:|
 | Linear Regression | 370.2 | 495.6 | 0.937 |
-| Random Forest | 149.3 | 243.3 | 0.985 |
+| Random Forest | 149.9 | 243.5 | 0.985 |
 | Gradient Boosting | 196.8 | 299.2 | 0.977 |
 
 The Random Forest model is saved as the best model.
+
+## Results and visualizations
+
+### Traffic patterns in the dataset
+
+Traffic is lowest overnight, rises sharply during the morning commute, and reaches its highest average level during the afternoon rush period. Weekday traffic is also noticeably higher than weekend traffic.
+
+![Traffic patterns by hour, weekday, weather, and volume distribution](figures/eda_overview.png)
+
+### Model evaluation
+
+The predicted-versus-actual plot shows how closely predictions follow measured traffic. The one-week comparison shows the model following the repeated daily traffic cycle, while the residual chart shows the remaining prediction errors.
+
+![Random Forest prediction evaluation](figures/model_evaluation.png)
+
+### Input variables compared with traffic volume
+
+These plots show how time, weather, cloud cover, and holidays relate to the number of vehicles recorded per hour. They help explain which patterns are available to the model before training.
+
+![Predictor variables compared with traffic volume](figures/variable_vs_target.png)
+
+The PNG files are committed to the repository, so GitHub displays them directly without running Python. To regenerate them locally or in GitHub Codespaces, run:
+
+```bash
+python scripts/02_eda.py
+python scripts/04_evaluate_and_plot.py
+python scripts/05_variable_vs_target_plots.py
+```
 
 ## Stack
 

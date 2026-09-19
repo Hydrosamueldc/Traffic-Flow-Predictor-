@@ -42,7 +42,7 @@ axes[1,0].tick_params(axis='x', rotation=45)
 # Feature importance
 importances = pd.read_csv("models/feature_importances.csv", index_col=0).iloc[:, 0]
 axes[1,1].barh(importances.head(8).index[::-1], importances.head(8).values[::-1])
-axes[1,1].set_title("Top 8 Feature Importances (Gradient Boosting)")
+axes[1,1].set_title("Top 8 Feature Importances (Random Forest)")
 
 plt.tight_layout()
 plt.savefig("figures/model_evaluation.png", dpi=120)
