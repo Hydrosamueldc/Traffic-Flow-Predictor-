@@ -34,7 +34,7 @@ print(f"Test:  {len(X_test)} rows ({df['date_time'].iloc[split_idx]} to {df['dat
 models = {
     "Linear Regression (baseline)": LinearRegression(),
     "Random Forest": RandomForestRegressor(
-        n_estimators=300,
+        n_estimators=80,
         max_depth=18,
         min_samples_leaf=2,
         random_state=42,
@@ -62,7 +62,7 @@ best_name = max(results, key=lambda k: results[k]["R2"])
 best_model = models[best_name]
 print(f"\nBest model: {best_name}")
 
-joblib.dump(best_model, MODELS_DIR / "best_model.pkl")
+joblib.dump(best_model, MODELS_DIR / "best_model.pkl", compress=3)
 joblib.dump(feature_cols, MODELS_DIR / "feature_columns.pkl")
 
 with open(MODELS_DIR / "metrics.json", "w") as f:
