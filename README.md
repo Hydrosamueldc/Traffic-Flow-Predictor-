@@ -1,5 +1,10 @@
 # Traffic flow prediction
 
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Python application](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml/badge.svg)](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml)
+
 A machine-learning traffic-volume prediction project inspired by my undergraduate thesis on the Lighthill-Whitham-Richards (LWR) traffic-flow model.
 
 The thesis studied traffic from a numerical and physics-based angle: given an initial traffic density profile, how does traffic evolve along a road? This project studies the same traffic-flow problem from a data-driven angle: given time, weather, holiday information, and recent traffic history, what traffic volume should we expect?
@@ -178,29 +183,34 @@ traffic-flow-ml/
 
 ## How to run locally on Windows
 
-This repository is inside the inner project folder:
+Clone the repository and enter the project folder:
 
 ```powershell
-cd C:\Users\PC\Downloads\traffic-flow-ml\traffic-flow-ml
+git clone https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-.git
+cd Traffic-Flow-Predictor-
 ```
 
-Install dependencies:
+Create a Python 3.11 virtual environment and install the dependencies:
 
 ```powershell
-..\.venv\Scripts\python.exe -m pip install -r requirements.txt
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 Start the API in terminal 1:
 
 ```powershell
-..\.venv\Scripts\python.exe -m uvicorn app.predict_api:app --host 127.0.0.1 --port 8000 --reload
+python -m uvicorn app.predict_api:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Leave terminal 1 running. Open another terminal, go to the same folder, and start the dashboard:
 
 ```powershell
-cd C:\Users\PC\Downloads\traffic-flow-ml\traffic-flow-ml
-..\.venv\Scripts\python.exe -m streamlit run app/dashboard.py
+cd Traffic-Flow-Predictor-
+.\.venv\Scripts\Activate.ps1
+python -m streamlit run app/dashboard.py
 ```
 
 The dashboard should open in your browser.
@@ -289,16 +299,14 @@ Run the API container:
 docker run -p 8000:8000 traffic-flow-ml
 ```
 
-The Dockerfile currently runs the FastAPI backend. The Streamlit dashboard is intended for local interactive use unless deployed separately.
-
-The repository also includes `render.yaml` as a starter Render configuration for deploying the API with Docker.
+The Dockerfile runs the FastAPI backend. Render builds this container using the included `render.yaml` configuration.
 
 ## Tests
 
 Run:
 
 ```powershell
-..\.venv\Scripts\python.exe -m pytest -q
+python -m pytest -q
 ```
 
 The tests check that:
@@ -315,28 +323,36 @@ The tests check that:
 - The dataset ends in 2018, so production use would require retraining with current data.
 - The prediction interval is an approximate range from Random Forest tree variation, not a statistically calibrated guarantee.
 - The dashboard animation is a visual traffic-intensity preview, not a physical traffic simulation.
-- The API is a local demo service and does not include authentication, rate limiting, or production monitoring.
+- The public API does not include authentication, rate limiting, or production monitoring.
+- The free Render service may take about a minute to wake after inactivity.
 
 ## Future improvements
 
 - Calibrate the prediction interval against real forecasting errors.
-- Deploy the API and dashboard online.
 - Add authentication and rate limiting for public deployment.
 - Add monitoring and scheduled retraining.
 - Validate the model on another road corridor.
 - Add an LWR numerical simulation module from the undergraduate thesis.
 - Build a hybrid workflow where ML predicts demand and the LWR model simulates congestion propagation.
 
-## Deployment notes
+## Deployment
 
-Hosting is optional for this portfolio project. The code, README, screenshots, and local run instructions are enough to show the project.
+The project uses two hosted services:
 
-If deployed later:
+| Component | Platform | Purpose |
+|---|---|---|
+| Dashboard | Streamlit Community Cloud | Displays the interactive prediction interface |
+| Prediction API | Render | Loads the trained model and returns predictions |
 
-- Streamlit Cloud is a simple option for the dashboard.
-- Render or Railway are better fits for a FastAPI backend.
-- Docker can help package the API consistently.
-- Vercel has a free Hobby plan, but it is not the best first choice for a Streamlit + FastAPI + scikit-learn project.
+Backend health check: [traffic-flow-predictor-njqc.onrender.com/health](https://traffic-flow-predictor-njqc.onrender.com/health)
+
+The dashboard stores the backend address in its Streamlit Cloud secrets:
+
+```toml
+TRAFFIC_API_URL = "https://traffic-flow-predictor-njqc.onrender.com"
+```
+
+The free Render service sleeps after inactivity. The first prediction may therefore take up to a minute while the service wakes; later predictions should be faster.
 
 ## Thesis connection in one sentence
 

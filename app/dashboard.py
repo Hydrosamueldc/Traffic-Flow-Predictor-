@@ -66,6 +66,10 @@ def apply_display_mode(dark_mode: bool) -> None:
         .stApp {
             background: #0f172a;
             color: #e5e7eb;
+            color-scheme: dark;
+            --text-color: #e5e7eb;
+            --background-color: #0f172a;
+            --secondary-background-color: #111827;
         }
         [data-testid="stSidebar"] {
             background: #111827;
@@ -76,6 +80,43 @@ def apply_display_mode(dark_mode: bool) -> None:
         [data-testid="stBaseButton-secondary"],
         [data-testid="stBaseButton-primary"] {
             border-color: #334155;
+        }
+        .stApp h1,
+        .stApp h2,
+        .stApp h3,
+        .stApp p,
+        .stApp li,
+        .stApp label,
+        .stApp [data-testid="stCaptionContainer"],
+        .stApp [data-testid="stMetricLabel"],
+        .stApp [data-testid="stMetricValue"],
+        .stApp [data-testid="stExpander"] summary {
+            color: #e5e7eb !important;
+        }
+        .stApp [data-testid="stWidgetLabel"] p,
+        .stApp [data-testid="stMarkdownContainer"] p,
+        .stApp [data-testid="stMarkdownContainer"] li {
+            color: #e5e7eb !important;
+        }
+        .stApp [data-baseweb="input"],
+        .stApp [data-baseweb="select"] > div,
+        .stApp [data-baseweb="textarea"] {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+        }
+        .stApp [data-baseweb="input"] input,
+        .stApp [data-baseweb="select"] *,
+        .stApp [data-baseweb="textarea"] textarea {
+            color: #f8fafc !important;
+        }
+        .stApp [data-testid="stTable"] th,
+        .stApp [data-testid="stTable"] td {
+            background-color: #111827 !important;
+            border-color: #334155 !important;
+            color: #e5e7eb !important;
+        }
+        .stApp [data-testid="stVerticalBlockBorderWrapper"] {
+            border-color: #334155 !important;
         }
         </style>
         """
@@ -278,6 +319,10 @@ st.title("Traffic flow predictor", icon=":material/traffic:")
 st.caption(
     "Predict hourly traffic volume from time, weather, holidays, and recent traffic history."
 )
+with st.container(horizontal=True):
+    st.badge("Random Forest", icon=":material/account_tree:", color="blue")
+    st.badge("1-hour forecast", icon=":material/schedule:", color="green")
+    st.badge("I-94 traffic data", icon=":material/route:", color="gray")
 
 top_left, top_right = st.columns([1.2, 1], vertical_alignment="center")
 with top_left:
