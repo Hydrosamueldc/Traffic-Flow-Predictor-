@@ -227,7 +227,8 @@ def check_api() -> bool:
 
 
 def call_prediction_api(payload: dict) -> dict:
-    response = requests.post(f"{API_URL}/predict", json=payload, timeout=10)
+    # Render free services can need close to a minute to wake after inactivity.
+    response = requests.post(f"{API_URL}/predict", json=payload, timeout=90)
     response.raise_for_status()
     return response.json()
 
@@ -350,7 +351,8 @@ if submitted:
     }
 
     try:
-        result = call_prediction_api(payload)
+        with st.spinner("Contacting the prediction service. The first request may take up to a minute..."):
+            result = call_prediction_api(payload)
         prediction = float(result["predicted_traffic_volume"])
         interval = result["prediction_interval"]
         st.session_state.last_prediction = prediction
