@@ -21,7 +21,7 @@ This project predicts hourly traffic volume on the I-94 westbound highway corrid
 - API tests
 - Docker support
 
-The current model predicts a point estimate such as:
+The model returns a point estimate and an approximate range:
 
 ```text
 Predicted traffic volume: 3094.9 vehicles/hour
@@ -42,7 +42,7 @@ This project is a companion project. Instead of solving a PDE, it learns from re
 | Needs initial and boundary conditions | Needs time, weather, holiday, and lag features |
 | Explains how congestion waves move | Forecasts expected traffic demand |
 
-A strong future version would combine both: the ML model could estimate expected demand, then an LWR numerical model could simulate how congestion spreads along a road.
+A hybrid extension could use the ML model to estimate demand and the LWR numerical model to simulate how congestion spreads along a road.
 
 ## Dataset
 
@@ -146,7 +146,7 @@ python scripts/05_variable_vs_target_plots.py
 | Streamlit | Interactive dashboard |
 | Requests | Lets the dashboard call the API |
 | Pytest | Automated tests |
-| Docker | Optional containerized deployment |
+| Docker | Packages and runs the FastAPI backend consistently |
 
 ## Repository structure
 
@@ -213,9 +213,9 @@ cd Traffic-Flow-Predictor-
 python -m streamlit run app/dashboard.py
 ```
 
-The dashboard should open in your browser.
+Streamlit opens the dashboard in the default browser.
 
-You can also start both with one command:
+Alternatively, start both services with one command:
 
 ```powershell
 .\start_project.ps1
@@ -283,9 +283,9 @@ Model metadata:
 curl http://127.0.0.1:8000/metadata
 ```
 
-These examples are safe to keep in the README because they use local demo data and do not expose passwords, tokens, API keys, or private customer information.
-
 ## Docker
+
+Docker packages the API, its Python version, and its dependencies into one reproducible container. The project runs locally without Docker, but the Render deployment uses the `Dockerfile` through `render.yaml`.
 
 Build the image:
 
@@ -299,7 +299,7 @@ Run the API container:
 docker run -p 8000:8000 traffic-flow-ml
 ```
 
-The Dockerfile runs the FastAPI backend. Render builds this container using the included `render.yaml` configuration.
+The container starts Uvicorn, exposes the FastAPI service, and uses the port supplied by the hosting platform.
 
 ## Tests
 
@@ -317,7 +317,7 @@ The tests check that:
 - the metadata endpoint works
 - batch prediction returns multiple predictions
 
-## Current limitations
+## Limitations
 
 - The model is trained on one highway corridor, so it should not be treated as a universal traffic predictor.
 - The dataset ends in 2018, so production use would require retraining with current data.
@@ -326,7 +326,7 @@ The tests check that:
 - The public API does not include authentication, rate limiting, or production monitoring.
 - The free Render service may take about a minute to wake after inactivity.
 
-## Future improvements
+## Potential extensions
 
 - Calibrate the prediction interval against real forecasting errors.
 - Add authentication and rate limiting for public deployment.
