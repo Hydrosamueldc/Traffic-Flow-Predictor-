@@ -7,15 +7,9 @@
 
 Predict hourly traffic volume on the I-94 westbound highway corridor from time, weather, holidays, and recent traffic observations. The Streamlit dashboard lets you explore different conditions, view the model's estimate in vehicles per hour, and see an animated preview of traffic intensity.
 
-The predictions come from a Random Forest model served through FastAPI. The dashboard also shows a range based on variation between the model's trees; this range is approximate, rather than a calibrated confidence interval.
+The predictions come from a Random Forest model. The dashboard also shows a range based on variation between the model's trees; this range is approximate, rather than a calibrated confidence interval.
 
 **Live dashboard:** [Open Traffic Flow Predictor](https://samuel-traffic-flow-predictor.streamlit.app/)
-
-**Hosted prediction API:** [traffic-flow-predictor-njqc.onrender.com](https://traffic-flow-predictor-njqc.onrender.com)
-
-[API documentation](https://traffic-flow-predictor-njqc.onrender.com/docs) | [Health check](https://traffic-flow-predictor-njqc.onrender.com/health)
-
-The API runs on Render's free tier. After inactivity, the first request may take about a minute while the service wakes.
 
 ## Background
 
@@ -217,6 +211,12 @@ TRAFFIC_API_URL=http://127.0.0.1:8000
 ```
 
 ## API examples
+
+**Hosted prediction API:** [traffic-flow-predictor-njqc.onrender.com](https://traffic-flow-predictor-njqc.onrender.com)
+
+[API documentation](https://traffic-flow-predictor-njqc.onrender.com/docs) | [Health check](https://traffic-flow-predictor-njqc.onrender.com/health)
+
+The API runs on Render's free tier. After inactivity, the first request may take about a minute while the service wakes.
 
 Health check:
 
