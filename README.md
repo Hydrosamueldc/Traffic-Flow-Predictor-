@@ -1,52 +1,29 @@
-# Traffic flow prediction
+# Traffic Flow Predictor
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Python application](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml/badge.svg)](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml)
 
-A machine-learning traffic-volume prediction project inspired by my undergraduate thesis on the Lighthill-Whitham-Richards (LWR) traffic-flow model.
+Predict hourly traffic volume on the I-94 westbound highway corridor from time, weather, holidays, and recent traffic observations. The Streamlit dashboard lets you explore different conditions, view the model's estimate in vehicles per hour, and see an animated preview of traffic intensity.
 
-The thesis studied traffic from a numerical and physics-based angle: given an initial traffic density profile, how does traffic evolve along a road? This project studies the same traffic-flow problem from a data-driven angle: given time, weather, holiday information, and recent traffic history, what traffic volume should we expect?
+The predictions come from a Random Forest model served through FastAPI. The dashboard also shows a range based on variation between the model's trees; this range is approximate, rather than a calibrated confidence interval.
 
-## Project summary
+**Live dashboard:** [Open Traffic Flow Predictor](https://samuel-traffic-flow-predictor.streamlit.app/)
 
-This project predicts hourly traffic volume on the I-94 westbound highway corridor using historical traffic and weather data. It includes:
+**Hosted prediction API:** [traffic-flow-predictor-njqc.onrender.com](https://traffic-flow-predictor-njqc.onrender.com)
 
-- a trained machine-learning model saved with Joblib
-- a FastAPI prediction backend
-- a Streamlit dashboard with an animated traffic preview
-- rough prediction intervals from the Random Forest tree spread
-- model evaluation outputs and plots
-- API tests
-- Docker support
+[API documentation](https://traffic-flow-predictor-njqc.onrender.com/docs) | [Health check](https://traffic-flow-predictor-njqc.onrender.com/health)
 
-The model returns a point estimate and an approximate range:
+The API runs on Render's free tier. After inactivity, the first request may take about a minute while the service wakes.
 
-```text
-Predicted traffic volume: 3094.9 vehicles/hour
-Likely range: 2850.0 to 3300.0 vehicles/hour
-```
+## Background
 
-## Why this project exists
-
-My undergraduate thesis used the LWR partial differential equation to simulate traffic density waves using Upwind and Lax-Wendroff finite difference schemes. That work was mathematical and simulation-based.
-
-This project is a companion project. Instead of solving a PDE, it learns from real-world historical data.
-
-| Thesis project | This ML project |
-|---|---|
-| Physics-based traffic simulation | Data-driven traffic prediction |
-| Uses LWR PDE and finite difference schemes | Uses scikit-learn models |
-| Simulates density over road position and time | Predicts hourly traffic volume |
-| Needs initial and boundary conditions | Needs time, weather, holiday, and lag features |
-| Explains how congestion waves move | Forecasts expected traffic demand |
-
-A hybrid extension could use the ML model to estimate demand and the LWR numerical model to simulate how congestion spreads along a road.
+I built this project as a companion to my undergraduate thesis on the Lighthill-Whitham-Richards (LWR) traffic-flow model. The thesis used Upwind and Lax-Wendroff schemes to simulate how traffic density changes along a road. Here, I use historical observations to predict hourly traffic volume.
 
 ## Dataset
 
-Source: UCI Machine Learning Repository, Metro Interstate Traffic Volume dataset.
+Source: [Metro Interstate Traffic Volume](https://archive.ics.uci.edu/dataset/492/metro+interstate+traffic+volume), UCI Machine Learning Repository.
 
 The raw data contains hourly I-94 westbound traffic volume and weather observations from October 2012 to September 2018.
 
@@ -56,9 +33,9 @@ Main target:
 traffic_volume = number of vehicles passing the sensor in one hour
 ```
 
-## Features used
+## Model inputs
 
-The model uses:
+Inputs include:
 
 - hour of day
 - day of week
@@ -75,7 +52,7 @@ The model uses:
 - traffic volume 24 hours ago
 - rolling 3-hour traffic average
 
-The lag features are important because traffic is highly related to recent traffic conditions.
+Supply recent traffic observations when available; these inputs help the model capture the daily traffic cycle.
 
 ## Data preparation
 
@@ -91,9 +68,9 @@ The project cleans the original dataset by:
 
 Final cleaned dataset size: 40,565 hourly records.
 
-## Modeling results
+## Model performance
 
-The data is split chronologically, not randomly, so the model is tested on future records relative to the training period.
+Models are evaluated on a chronological split, with the test period following the training period. MAE and RMSE are measured in vehicles per hour.
 
 | Model | MAE | RMSE | R2 |
 |---|---:|---:|---:|
@@ -101,7 +78,7 @@ The data is split chronologically, not randomly, so the model is tested on futur
 | Random Forest | 149.9 | 243.5 | 0.985 |
 | Gradient Boosting | 196.8 | 299.2 | 0.977 |
 
-The Random Forest model is saved as the best model.
+Random Forest achieved the lowest test error and is used by the API. These results are recorded in [models/metrics.json](models/metrics.json).
 
 ## Results and visualizations
 
@@ -123,7 +100,7 @@ These plots show how time, weather, cloud cover, and holidays relate to the numb
 
 ![Predictor variables compared with traffic volume](figures/variable_vs_target.png)
 
-The PNG files are committed to the repository, so GitHub displays them directly without running Python. To regenerate them locally or in GitHub Codespaces, run:
+To regenerate the figures, run:
 
 ```bash
 python scripts/02_eda.py
@@ -136,7 +113,7 @@ python scripts/05_variable_vs_target_plots.py
 | Tool | Purpose |
 |---|---|
 | Python | Main programming language |
-| pandas | Table/data cleaning, similar to Excel in Python |
+| pandas | Data cleaning and feature preparation |
 | NumPy | Numerical calculations |
 | scikit-learn | Machine-learning models |
 | Matplotlib | Charts and plots |
@@ -221,7 +198,7 @@ Alternatively, start both services with one command:
 .\start_project.ps1
 ```
 
-For a slower beginner walkthrough, see [run.md](run.md).
+For a step-by-step walkthrough, see [run.md](run.md).
 
 ## Configuration
 
@@ -285,7 +262,7 @@ curl http://127.0.0.1:8000/metadata
 
 ## Docker
 
-Docker packages the API, its Python version, and its dependencies into one reproducible container. The project runs locally without Docker, but the Render deployment uses the `Dockerfile` through `render.yaml`.
+The API can also run in Docker. Render uses the same [Dockerfile](Dockerfile), configured through [render.yaml](render.yaml).
 
 Build the image:
 
@@ -341,7 +318,7 @@ The project uses two hosted services:
 
 | Component | Platform | Purpose |
 |---|---|---|
-| Dashboard | Streamlit Community Cloud | Displays the interactive prediction interface |
+| [Dashboard](https://samuel-traffic-flow-predictor.streamlit.app/) | Streamlit Community Cloud | Displays the interactive prediction interface |
 | Prediction API | Render | Loads the trained model and returns predictions |
 
 Backend health check: [traffic-flow-predictor-njqc.onrender.com/health](https://traffic-flow-predictor-njqc.onrender.com/health)
@@ -354,6 +331,10 @@ TRAFFIC_API_URL = "https://traffic-flow-predictor-njqc.onrender.com"
 
 The free Render service sleeps after inactivity. The first prediction may therefore take up to a minute while the service wakes; later predictions should be faster.
 
-## Thesis connection in one sentence
+## Author
 
-This project extends my undergraduate interest in traffic-flow modeling from a numerical PDE approach into a practical machine-learning prediction system using real traffic data.
+Adegboyega Samuel
+
+## License
+
+[MIT](LICENSE)
