@@ -5,11 +5,49 @@
 [![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Python application](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml/badge.svg)](https://github.com/Hydrosamueldc/Traffic-Flow-Predictor-/actions/workflows/python-app.yml)
 
-Predict hourly traffic volume on the I-94 westbound highway corridor from time, weather, holidays, and recent traffic observations. The Streamlit dashboard lets you explore different conditions, view the model's estimate in vehicles per hour, and see an animated preview of traffic intensity.
+An end-to-end machine-learning system for predicting hourly traffic volume on the I-94 westbound highway corridor from weather, calendar information, and recent traffic observations. The dashboard lets you explore different conditions and view predicted volume in vehicles per hour.
 
 The predictions come from a Random Forest model. The dashboard also shows a range based on variation between the model's trees; this range is approximate, rather than a calibrated confidence interval.
 
 **Live dashboard:** [Open Traffic Flow Predictor](https://samuel-traffic-flow-predictor.streamlit.app/)
+
+## Model performance
+
+The first 80% of records are used for training and the final 20% for testing. MAE and RMSE are measured in vehicles per hour.
+
+| Model | MAE | RMSE | R2 |
+|---|---:|---:|---:|
+| Linear Regression | 370.2 | 495.6 | 0.937 |
+| Random Forest | 149.9 | 243.5 | 0.985 |
+| Gradient Boosting | 196.8 | 299.2 | 0.977 |
+
+Random Forest achieved the lowest test error and is used by the API. These results are recorded in [models/metrics.json](models/metrics.json).
+
+## What I built
+
+```text
+Historical observations -> Data cleaning and features -> Model comparison
+                                                      -> Saved Random Forest
+                                                      -> FastAPI -> Streamlit dashboard
+```
+
+The training pipeline compares Linear Regression, Random Forest, and Gradient Boosting. FastAPI serves the selected model, and Streamlit provides the prediction interface and traffic-intensity animation. The repository also includes API tests, evaluation plots, and a Docker configuration for the backend.
+
+## What drives the predictions?
+
+The saved Random Forest ranks recent traffic and time of day highest. These are the top five individual features from [models/feature_importances.csv](models/feature_importances.csv):
+
+| Rank | Feature | Importance |
+|---|---|---:|
+| 1 | Previous traffic observation (`traffic_volume_lag_1h`) | 71.29% |
+| 2 | Hour of day, cosine encoding (`hour_cos`) | 22.15% |
+| 3 | Hour of day, sine encoding (`hour_sin`) | 2.72% |
+| 4 | Rolling mean of the previous three observations (`rolling_3h_mean`) | 1.11% |
+| 5 | Day of week, sine encoding (`dow_sin`) | 0.77% |
+
+The previous traffic observation accounts for about 71% of the model's impurity-based importance. This suggests that recent traffic is central to its predictions; the reported test scores should be read in the context of having recent observations available, rather than predicting from weather and calendar inputs alone.
+
+These scores describe how the fitted forest reduces impurity during training. They do not establish causation or measure the accuracy gained from each feature, and correlated inputs can share importance. A comparison with lag features removed would be needed to quantify their contribution to test performance.
 
 ## Background
 
@@ -61,18 +99,6 @@ The project cleans the original dataset by:
 - adding lag and rolling traffic features
 
 Final cleaned dataset size: 40,565 hourly records.
-
-## Model performance
-
-Models are evaluated on a chronological split, with the test period following the training period. MAE and RMSE are measured in vehicles per hour.
-
-| Model | MAE | RMSE | R2 |
-|---|---:|---:|---:|
-| Linear Regression | 370.2 | 495.6 | 0.937 |
-| Random Forest | 149.9 | 243.5 | 0.985 |
-| Gradient Boosting | 196.8 | 299.2 | 0.977 |
-
-Random Forest achieved the lowest test error and is used by the API. These results are recorded in [models/metrics.json](models/metrics.json).
 
 ## Results and visualizations
 
